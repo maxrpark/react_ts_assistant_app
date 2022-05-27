@@ -3,3 +3,11 @@ export interface Item {
   value: string;
   isComplete: boolean;
 }
+
+export interface Project {
+  gitUrl: string;
+  id: string;
+  name: string;
+  projectUrl: string;
+  url: string;
+}
