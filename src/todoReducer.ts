@@ -4,6 +4,8 @@ const useTodoReducer = (state: InitialState, action: any) => {
   switch (action.type) {
     case 'DISPLAY_ALERT':
       return { ...state, showAlert: true, alertMessege: action.payload };
+    case 'UPDATE_INPUT':
+      return { ...state, ItemValue: action.payload };
     case 'HIDE_ALERT':
       return { ...state, showAlert: false };
     case 'REMOVE_ALL':

@@ -2,9 +2,11 @@ import React, { useContext, useReducer, useEffect } from 'react';
 import useTodoReducer from './todoReducer';
 import { Item } from './ts/interfaces';
 const getLocalStorage = () => {
-  let todoList = localStorage.getItem('todoList');
+  let todoList = localStorage.getItem('todoListTs');
   if (todoList) {
-    return (todoList = JSON.parse(localStorage.getItem('todoList') as string)); // fix
+    return (todoList = JSON.parse(
+      localStorage.getItem('todoListTs') as string
+    )); // fix
   } else {
     return [];
   }
@@ -27,8 +29,9 @@ interface AppInterface {
   ItemID: string;
   ItemValue: string;
   removeAll: () => void;
+  formInput: (e: any) => void;
   completeItem: (id: string) => void;
-  handleForm: (itemValue: string) => void;
+  handleForm: (e: React.FormEvent) => void;
   editItem: (id: string) => void;
   deleteItem: (id: string) => void;
   displayAlert: (messege: string, type: string) => void;
@@ -89,14 +92,23 @@ export const AppProvider: React.FC<Props> = ({ children }) => {
     dispatch({ type: 'REMOVE_ALL' });
     displayAlert('All items removed', 'danger');
   };
+  // REMOVE ALL
+  const formInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch({ type: 'UPDATE_INPUT', payload: e.target.value });
+  };
   // handleForm
-  const handleForm = (itemValue: string) => {
-    if (state.isEditing && itemValue) {
-      dispatch({ type: 'EDITING_ITEM', payload: itemValue });
-      displayAlert('Task Edited', 'success');
+  const handleForm = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (state.ItemValue && state.ItemValue.trim() !== '') {
+      if (state.isEditing && state.ItemValue) {
+        dispatch({ type: 'EDITING_ITEM', payload: state.ItemValue });
+        displayAlert('Task Edited', 'success');
+      } else {
+        dispatch({ type: 'ADD_ITEM', payload: state.ItemValue });
+        displayAlert('Task Added', 'success');
+      }
     } else {
-      dispatch({ type: 'ADD_ITEM', payload: itemValue });
-      displayAlert('Task Added', 'success');
+      displayAlert('Please Enter Task', 'danger');
     }
   };
 
@@ -110,7 +122,7 @@ export const AppProvider: React.FC<Props> = ({ children }) => {
   };
 
   useEffect(() => {
-    //  localStorage.setItem('todoList', JSON.stringify(state.todo));
+    localStorage.setItem('todoListTs', JSON.stringify(state.todo));
     if (state.alertMessege.messege !== 'Editing...') {
       let timeOut = setTimeout(() => {
         dispatch({ type: 'HIDE_ALERT' });
@@ -124,6 +136,7 @@ export const AppProvider: React.FC<Props> = ({ children }) => {
       value={{
         ...state,
         completeItem,
+        formInput,
         editItem,
         deleteItem,
         displayAlert,
