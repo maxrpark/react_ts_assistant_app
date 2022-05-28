@@ -11,3 +11,7 @@ export interface Project {
   projectUrl: string;
   url: string;
 }
+export interface AlertMessege {
+  messege: string;
+  type: string;
+}

@@ -1,6 +1,7 @@
 import React, { useContext, useReducer, useEffect } from 'react';
 import useTodoReducer from './todoReducer';
-import { Item } from './ts/interfaces';
+import { Item, AlertMessege } from './ts/interfaces';
+import { actionType } from './ts/reducer/actionType';
 const getLocalStorage = () => {
   let todoList = localStorage.getItem('todoListTs');
   if (todoList) {
@@ -15,11 +16,6 @@ const getLocalStorage = () => {
 type Props = {
   children: React.ReactNode;
 };
-
-interface AlertMessege {
-  messege: string;
-  type: string;
-}
 
 interface AppInterface {
   todo: [] | Item[];
@@ -65,9 +61,30 @@ export const AppProvider: React.FC<Props> = ({ children }) => {
     InitialState as InitialState
   );
 
-  // Completed
+  // CHANGE INPUT VALUE
+  const formInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch({ type: actionType.UPDATE_INPUT, payload: e.target.value });
+  };
+
+  // FORMSUBMIT
+  const handleForm = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (state.ItemValue && state.ItemValue.trim() !== '') {
+      if (state.isEditing && state.ItemValue) {
+        dispatch({ type: actionType.EDITING_ITEM, payload: state.ItemValue });
+        displayAlert('Task Edited', 'success');
+      } else {
+        dispatch({ type: actionType.ADD_ITEM, payload: state.ItemValue });
+        displayAlert('Task Added', 'success');
+      }
+    } else {
+      displayAlert('Please Enter Task', 'danger');
+    }
+  };
+
+  // TOOGLE COMPLETE
   const completeItem = (id: string) => {
-    dispatch({ type: 'TOOGLE_COMPLETE', payload: id });
+    dispatch({ type: actionType.TOOGLE_COMPLETE, payload: id });
 
     state.todo.map((item: Item) => {
       if (item.id === id) {
@@ -77,39 +94,21 @@ export const AppProvider: React.FC<Props> = ({ children }) => {
       }
     });
   };
+
   // EDITING
   const editItem = (id: string) => {
-    dispatch({ type: 'EDIT_ITEM', payload: id });
+    dispatch({ type: actionType.EDIT_ITEM, payload: id });
     displayAlert('Editing...', 'warning');
   };
   const deleteItem = (id: string) => {
-    dispatch({ type: 'DELETE_ITEM', payload: id });
+    dispatch({ type: actionType.DELETE_ITEM, payload: id });
     displayAlert('Task Deleted', 'danger');
   };
 
   // REMOVE ALL
   const removeAll = () => {
-    dispatch({ type: 'REMOVE_ALL' });
+    dispatch({ type: actionType.REMOVE_ALL });
     displayAlert('All items removed', 'danger');
-  };
-  // REMOVE ALL
-  const formInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch({ type: 'UPDATE_INPUT', payload: e.target.value });
-  };
-  // handleForm
-  const handleForm = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (state.ItemValue && state.ItemValue.trim() !== '') {
-      if (state.isEditing && state.ItemValue) {
-        dispatch({ type: 'EDITING_ITEM', payload: state.ItemValue });
-        displayAlert('Task Edited', 'success');
-      } else {
-        dispatch({ type: 'ADD_ITEM', payload: state.ItemValue });
-        displayAlert('Task Added', 'success');
-      }
-    } else {
-      displayAlert('Please Enter Task', 'danger');
-    }
   };
 
   // ALERT
@@ -118,14 +117,14 @@ export const AppProvider: React.FC<Props> = ({ children }) => {
       messege,
       type,
     };
-    dispatch({ type: 'DISPLAY_ALERT', payload: alert });
+    dispatch({ type: actionType.DISPLAY_ALERT, payload: alert });
   };
 
   useEffect(() => {
     localStorage.setItem('todoListTs', JSON.stringify(state.todo));
     if (state.alertMessege.messege !== 'Editing...') {
       let timeOut = setTimeout(() => {
-        dispatch({ type: 'HIDE_ALERT' });
+        dispatch({ type: actionType.HIDE_ALERT });
       }, 1500);
       return () => clearTimeout(timeOut);
     }
